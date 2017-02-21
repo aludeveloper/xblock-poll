@@ -300,6 +300,15 @@ class PollBase(XBlock, ResourceMixin, PublishEventMixin):
         # Otherwise fall back to a standard JSON handler
         return cls.json_handler(func)
 
+    def publish_to_response_aggregator(self, question_response_dict, response_type, display_name):
+        from responseAggregator.models import Response
+        from responseAggregator.utils import save_response
+
+        save_response(anonymous_student_id=self.runtime.anonymous_student_id,
+                      course_id=self.runtime.course_id,
+                      display_name=display_name,
+                      response_type=response_type,
+                      question_response_pairs=question_response_dict)
 
 class PollBlock(PollBase):
     """
@@ -530,6 +539,11 @@ class PollBlock(PollBase):
 
         self.send_vote_event({'choice': self.choice})
 
+        # all votes are compiled and exported in the responseAggregator
+        question_response_dict = {self.question : self.choice}
+        self.publish_to_response_aggregator(question_response_dict, "poll", data.get('display_name', '').strip())
+
+
         return result
 
     @XBlock.json_handler
@@ -591,6 +605,18 @@ class PollBlock(PollBase):
                  feedback="### Thank you&#10;&#10;for being a valued student."/>
              """),
         ]
+
+def get_survey_question_response_dict(questions, answers):
+    question_labels = []
+    answer_labels = []
+
+    for key, value in questions.items():
+        question_labels.append(value['label'])
+
+    for key, value  in answers.items():
+        answer_labels.append(value)
+
+    return dict(zip(question_labels, answer_labels))
 
 
 class SurveyBlock(PollBase):
@@ -912,6 +938,10 @@ class SurveyBlock(PollBase):
         result['can_vote'] = self.can_vote()
         result['submissions_count'] = self.submissions_count
         result['max_submissions'] = self.max_submissions
+
+        #all votes are compiled and exported in the responseAggregator 
+        question_response_dict = get_survey_question_response_dict(questions, answers)
+        self.publish_to_response_aggregator(question_response_dict, "survey", data.get('display_name', '').strip())
 
         return result
 
