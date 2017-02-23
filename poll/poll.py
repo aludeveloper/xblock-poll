@@ -240,6 +240,15 @@ class PollBase(XBlock, ResourceMixin, PublishEventMixin):
             result['errors'].append("Private results may not be False when Maximum Submissions is not 1.")
         return max_submissions
 
+    @XBlock.handler
+    def get_course_responses(self, data, suffix=''):
+        from responseAggregator.utils import download_course_responses
+        course_id = self.runtime.course_id
+        wsgi_response = Response(content_type='text/csv',
+                                 content_disposition='attachment; filename="{}.csv"'.format(course_id))
+
+        return download_course_responses(course_id, wsgi_response)
+
     @classmethod
     def static_replace_json_handler(cls, func):
         """A JSON handler that replace all static pseudo-URLs by the actual paths.

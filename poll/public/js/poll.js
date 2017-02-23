@@ -7,12 +7,15 @@ function PollUtil (runtime, element, pollType) {
         // Initialization function used for both Poll Types
         this.voteUrl = runtime.handlerUrl(element, 'vote');
         this.tallyURL = runtime.handlerUrl(element, 'get_results');
+	this.downloadCourseResponsesUrl = runtime.handlerUrl(element, 'get_course_responses');
         this.votedUrl = runtime.handlerUrl(element, 'student_voted');
         this.submit = $('input[type=button]', element);
         this.answers = $('input[type=radio]', element);
         this.resultsTemplate = Handlebars.compile($("#" + pollType + "-results-template", element).html());
         this.viewResultsButton = $('.view-results-button', element);
-        this.viewResultsButton.click(this.getResults);
+	this.viewResultsButton.click(this.getResults);
+	this.downloadCourseResponsesButton = $('.download-responses-button', element);
+	this.downloadCourseResponsesButton.click(this.getCourseResponses); 
 
         return this.shouldDisplayResults();
     };
@@ -180,6 +183,10 @@ function PollUtil (runtime, element, pollType) {
             }
         });
     };
+
+    this.getCourseResponses = function() { 
+    	window.open(self.downloadCourseResponsesUrl, "_self");
+    }; 
 
     this.enableSubmit = function () {
         // Enable the submit button.
