@@ -212,7 +212,7 @@ function PollUtil (runtime, element, pollType) {
     };
 
     this.getCourseResponses = function() { 
-    	window.open(self.downloadCourseResponsesUrl, "_self");
+	window.open(self.downloadCourseResponsesUrl, "_self");
     }; 
 
     this.enableSubmit = function () {
